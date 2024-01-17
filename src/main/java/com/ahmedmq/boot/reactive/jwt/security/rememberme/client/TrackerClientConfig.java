@@ -32,9 +32,8 @@ public class TrackerClientConfig {
                 .clientConnector(reactorClientHttpConnector)
                 .build();
 
-        var wca = WebClientAdapter.forClient(wc);
-        return HttpServiceProxyFactory.builder()
-                .clientAdapter(wca)
+        var wca = WebClientAdapter.create(wc);
+        return HttpServiceProxyFactory.builder().exchangeAdapter(wca)
                 .build()
                 .createClient(TrackerClient.class);
     }

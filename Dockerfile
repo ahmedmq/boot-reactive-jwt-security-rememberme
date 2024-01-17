@@ -5,9 +5,6 @@ COPY gradle gradle
 COPY build.gradle.kts settings.gradle.kts gradlew ./
 COPY src src
 
-#RUN ./gradlew build -x test
-#RUN mkdir -p build/libs/dependency && (cd build/libs/dependency; jar -xf ../*.jar)
-
 RUN --mount=type=cache,target=/root/.gradle ./gradlew clean build -x test
 RUN mkdir -p build/dependency && (cd build/dependency; jar -xf ../libs/*-SNAPSHOT.jar)
 

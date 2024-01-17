@@ -1,6 +1,8 @@
 package com.ahmedmq.boot.reactive.jwt.security.rememberme.config;
 
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.TrackerClient;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.filter.PersistentRememberMeAuthenticationFilter;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.service.RememberMeService;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenAuthenticationFilter;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +25,8 @@ public class SecurityConfig {
     @Bean
     SecurityWebFilterChain springWebFilterChain(ServerHttpSecurity http,
                                                 JwtTokenProvider tokenProvider,
-                                                ReactiveAuthenticationManager reactiveAuthenticationManager) {
+                                                ReactiveAuthenticationManager reactiveAuthenticationManager,
+                                                RememberMeService rememberMeService) {
 
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
@@ -34,6 +37,7 @@ public class SecurityConfig {
                         .anyExchange().authenticated()
                 )
                 .addFilterAt(new JwtTokenAuthenticationFilter(tokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAfter(new PersistentRememberMeAuthenticationFilter(rememberMeService), SecurityWebFiltersOrder.HTTP_BASIC)
                 .build();
     }
 

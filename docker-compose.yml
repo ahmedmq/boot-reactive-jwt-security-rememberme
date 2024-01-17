@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  app:
+    build: .
+    restart: always
+    container_name: app
+    networks:
+      - app_nw
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      SPRING_R2DBC_URL: "r2dbc:postgresql://database:5432/postgres"
+      SPRING_R2DBC_USERNAME: "postgres"
+      SPRING_R2DBC_PASSWORD: "postgres"
+  database:
+    image: postgres
+    container_name: postgres
+    networks:
+      - app_nw
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d postgres'"]
+      start_period: 10s
+      interval: 10s
+      timeout: 0s
+      retries: 5
+    ports:
+      - "5432:5432"
+#    volumes:
+#      - "./src/main/resources/schema.sql:/docker-entrypoint-initdb.d/schema.sql"
+
+networks:
+  app_nw:
+    driver: bridge
