@@ -10,7 +10,7 @@ The application utilizes Pivotal Tracker for user authentication. When a login r
 
 - Create a Pivotal Tracker [account](https://www.pivotaltracker.com/signup/new)
 - Fetch the API token from the [profile](https://www.pivotaltracker.com/profile) page
-- Java 17
+- Java 21
 - Docker to run the app and PostgresSQL database
 
 
