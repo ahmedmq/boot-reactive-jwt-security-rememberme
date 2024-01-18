@@ -85,3 +85,7 @@ The application utilizes Pivotal Tracker API for user authentication. When a log
   ```json
   {"id":341292344,"email":"test@xyz.com"}
   ```
+
+# Notes
+
+- The main class for the reactive persistent remember-me authentication is [PersistentRememberMeService](src/main/java/com/ahmedmq/boot/reactive/jwt/security/rememberme/core/service/PersistentRememberMeService.java). The implementation of this class closely resembles from servlet implementation of persistent remember-me authentication in [PersistentTokenBasedRememberMeServices.java](https://github.com/spring-projects/spring-security/blob/main/web/src/main/java/org/springframework/security/web/authentication/rememberme/PersistentTokenBasedRememberMeServices.java)

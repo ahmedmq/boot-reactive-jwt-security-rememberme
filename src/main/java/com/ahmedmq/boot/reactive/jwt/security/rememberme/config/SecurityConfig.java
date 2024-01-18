@@ -1,8 +1,8 @@
 package com.ahmedmq.boot.reactive.jwt.security.rememberme.config;
 
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.TrackerClient;
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.filter.PersistentRememberMeAuthenticationFilter;
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.service.RememberMeService;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.filter.PersistentRememberMeAuthenticationFilter;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.service.RememberMeService;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenAuthenticationFilter;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;

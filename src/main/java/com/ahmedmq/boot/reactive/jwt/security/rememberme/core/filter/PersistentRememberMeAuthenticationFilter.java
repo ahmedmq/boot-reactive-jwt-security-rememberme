@@ -1,6 +1,6 @@
-package com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.filter;
+package com.ahmedmq.boot.reactive.jwt.security.rememberme.core.filter;
 
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.service.RememberMeService;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.service.RememberMeService;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;

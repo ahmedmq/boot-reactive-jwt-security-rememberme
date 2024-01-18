@@ -1,10 +1,10 @@
-package com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.service;
+package com.ahmedmq.boot.reactive.jwt.security.rememberme.core.service;
 
 
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.TrackerClient;
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.repository.RememberMeTokenRepository;
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.repository.RememberedLogin;
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.repository.RememberMeTokenRepository;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.repository.RememberedLogin;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenProvider;
 import org.slf4j.Logger;
 import org.springframework.boot.web.server.Cookie;
@@ -28,12 +28,12 @@ import java.util.Map;
 import java.util.UUID;
 
 
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper.JWT_COOKIE_DURATION;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper.JWT_COOKIE_NAME;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper.REMEMBER_ME_COOKIE_DURATION;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper.REMEMBER_ME_COOKIE_LEEWAY_DURATION;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper.REMEMBER_ME_COOKIE_NAME;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper.encodeCookie;
+import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.JWT_COOKIE_DURATION;
+import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.JWT_COOKIE_NAME;
+import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.REMEMBER_ME_COOKIE_DURATION;
+import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.REMEMBER_ME_COOKIE_LEEWAY_DURATION;
+import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.REMEMBER_ME_COOKIE_NAME;
+import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.encodeCookie;
 import static java.time.LocalDateTime.now;
 
 @Service

@@ -1,4 +1,4 @@
-package com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme;
+package com.ahmedmq.boot.reactive.jwt.security.rememberme.core;
 
 import org.springframework.boot.web.server.Cookie;
 import org.springframework.http.ResponseCookie;

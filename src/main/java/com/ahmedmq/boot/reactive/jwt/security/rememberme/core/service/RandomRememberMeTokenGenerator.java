@@ -1,4 +1,4 @@
-package com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.service;
+package com.ahmedmq.boot.reactive.jwt.security.rememberme.core.service;
 
 import org.springframework.stereotype.Component;
 

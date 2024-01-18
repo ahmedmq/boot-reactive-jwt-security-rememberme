@@ -1,4 +1,4 @@
-package com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.repository;
+package com.ahmedmq.boot.reactive.jwt.security.rememberme.core.repository;
 
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Mono;

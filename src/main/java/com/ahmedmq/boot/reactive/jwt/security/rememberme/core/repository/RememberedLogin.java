@@ -1,4 +1,4 @@
-package com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.repository;
+package com.ahmedmq.boot.reactive.jwt.security.rememberme.core.repository;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Version;
