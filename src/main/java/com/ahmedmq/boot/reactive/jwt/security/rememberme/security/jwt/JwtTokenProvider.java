@@ -54,7 +54,7 @@ public class JwtTokenProvider {
             claimsBuilder.add(AUTHORITIES_KEY, authorities.stream()
                     .map(GrantedAuthority::getAuthority).collect(joining(",")));
         }
-
+        claimsBuilder.add("token", authentication.getCredentials().toString());
         var claims = claimsBuilder.build();
 
         Date now = new Date();
@@ -76,7 +76,7 @@ public class JwtTokenProvider {
                 : AuthorityUtils
                 .commaSeparatedStringToAuthorityList(authoritiesClaim.toString());
 
-        User principal = new User(claims.getSubject(), "", authorities);
+        User principal = new User(claims.getSubject(), claims.get("token").toString(), authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, token, authorities);
     }

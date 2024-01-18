@@ -1,18 +1,25 @@
 package com.ahmedmq.boot.reactive.jwt.security.rememberme.web;
 
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.TrackerClient;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.service.RememberMeService;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.rememberme.CookieHelper;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenProvider;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
@@ -27,10 +34,13 @@ public class AuthController {
 
     private final RememberMeService rememberMeService;
 
-    public AuthController(JwtTokenProvider tokenProvider, ReactiveAuthenticationManager authenticationManager, RememberMeService rememberMeService) {
+    private final TrackerClient trackerClient;
+
+    public AuthController(JwtTokenProvider tokenProvider, ReactiveAuthenticationManager authenticationManager, RememberMeService rememberMeService, TrackerClient trackerClient) {
         this.tokenProvider = tokenProvider;
         this.authenticationManager = authenticationManager;
         this.rememberMeService = rememberMeService;
+        this.trackerClient = trackerClient;
     }
 
     @PostMapping("/login")
@@ -39,7 +49,7 @@ public class AuthController {
 
         return this.authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(
-                        authRequest.username(), authRequest.password()))
+                        "", authRequest.apiToken()))
                 .onErrorResume(e -> Mono.error(new AccessDeniedException(e.getMessage())))
                 .flatMap(auth -> {
                     var accessToken = tokenProvider.createToken(auth);
@@ -59,6 +69,18 @@ public class AuthController {
                     return builder.build();
                 });
 
+    }
+
+    @GetMapping("/me")
+    public Mono<MeResponse> me(@AuthenticationPrincipal UserDetails user) {
+        var headers = new HttpHeaders();
+        System.out.println("user.getPassword() = " + user.getPassword());
+        headers.add("X-TrackerToken", user.getPassword());
+        return trackerClient.me(headers, Map.of("fields", "id,email,api_token"))
+                .map(me -> new MeResponse(me.id(), me.email()));
+    }
+
+    record MeResponse (int id, String email) {
     }
 
     record TokenResponse(String accessToken, String rememberMeToken) {

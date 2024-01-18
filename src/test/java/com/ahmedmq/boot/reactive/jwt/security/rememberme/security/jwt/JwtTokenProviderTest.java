@@ -104,7 +104,7 @@ class JwtTokenProviderTest {
 
     private String generateToken(String username, String... roles) {
         Collection<? extends GrantedAuthority> authorities = AuthorityUtils.createAuthorityList(roles);
-        var principal = new User(username, "password", authorities);
+        var principal = new User(username, "apiToken", authorities);
         var usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(principal, null, authorities);
         return this.jwtTokenProvider.createToken(usernamePasswordAuthenticationToken);
     }
