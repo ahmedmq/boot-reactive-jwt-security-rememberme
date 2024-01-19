@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono;
 public interface RememberMeTokenRepository extends R2dbcRepository<RememberedLogin, Long> {
     Mono<RememberedLogin> findBySeries(String series);
 
-    Mono<Void> deleteByApiToken(String apiToken);
+    Mono<Void> deleteByPersonalAccessToken(String personalAccessToken);
 }

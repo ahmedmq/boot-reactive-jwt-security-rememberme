@@ -8,5 +8,5 @@ public interface RememberMeService {
 
     Mono<Authentication> autoLogin(ServerWebExchange exchange);
 
-    Mono<String> rememberMe(String trackerToken);
+    Mono<String> rememberMe(String personalAccessToken);
 }

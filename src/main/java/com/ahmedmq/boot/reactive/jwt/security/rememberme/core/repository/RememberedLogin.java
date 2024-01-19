@@ -11,7 +11,7 @@ public class RememberedLogin {
 
     @Id
     private Long id;
-    private String apiToken;
+    private String personalAccessToken;
     private String series;
     private String tokenLatest;
     private LocalDateTime tokenLatestAt;
@@ -20,8 +20,8 @@ public class RememberedLogin {
     @Version
     private Long version;
 
-    public RememberedLogin(String apiToken, String series, String tokenLatest, LocalDateTime tokenLatestAt) {
-        this.apiToken = apiToken;
+    public RememberedLogin(String personalAccessToken, String series, String tokenLatest, LocalDateTime tokenLatestAt) {
+        this.personalAccessToken = personalAccessToken;
         this.series = series;
         this.tokenLatest = tokenLatest;
         this.tokenLatestAt = tokenLatestAt;
@@ -36,8 +36,8 @@ public class RememberedLogin {
         return id;
     }
 
-    public String getApiToken() {
-        return apiToken;
+    public String getPersonalAccessToken() {
+        return personalAccessToken;
     }
 
     public String getSeries() {
@@ -84,7 +84,7 @@ public class RememberedLogin {
     public String toString() {
         return "RememberedLogin{" +
                 "id=" + id +
-                ", apiToken='" + apiToken + '\'' +
+                ", personalToken='" + personalAccessToken + '\'' +
                 ", series='" + series + '\'' +
                 ", tokenLatest='" + tokenLatest + '\'' +
                 ", tokenLatestAt=" + tokenLatestAt +

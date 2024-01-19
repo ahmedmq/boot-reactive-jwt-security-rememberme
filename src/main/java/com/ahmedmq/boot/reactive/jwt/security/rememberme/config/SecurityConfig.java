@@ -1,6 +1,6 @@
 package com.ahmedmq.boot.reactive.jwt.security.rememberme.config;
 
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.TrackerClient;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.GithubClient;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.filter.PersistentRememberMeAuthenticationFilter;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.service.RememberMeService;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenAuthenticationFilter;
@@ -16,8 +16,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
-
-import java.util.Map;
 
 @Configuration
 public class SecurityConfig {
@@ -36,28 +34,31 @@ public class SecurityConfig {
                         .pathMatchers("/auth/login").permitAll()
                         .anyExchange().authenticated()
                 )
-                .addFilterAt(new JwtTokenAuthenticationFilter(tokenProvider), SecurityWebFiltersOrder.HTTP_BASIC)
-                .addFilterAfter(new PersistentRememberMeAuthenticationFilter(rememberMeService), SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAt(new JwtTokenAuthenticationFilter(tokenProvider),
+                        SecurityWebFiltersOrder.HTTP_BASIC)
+                .addFilterAfter(new PersistentRememberMeAuthenticationFilter(rememberMeService),
+                        SecurityWebFiltersOrder.HTTP_BASIC)
                 .build();
     }
 
     @Bean
-    public ReactiveAuthenticationManager reactiveAuthenticationManager(TrackerClient trackerClient) {
+    public ReactiveAuthenticationManager reactiveAuthenticationManager(GithubClient githubClient) {
         return authentication -> {
-            String apiToken = authentication.getCredentials().toString();
+            String personalAccessToken = authentication.getCredentials().toString();
             var headers = new HttpHeaders();
-            headers.add("X-TrackerToken", apiToken);
-            return trackerClient.me(headers, Map.of("fields", "id,email,api_token"))
+            headers.setBearerAuth(personalAccessToken);
+            return githubClient.user(headers)
                     .map(me -> {
                         UserDetails userDetails = User
-                                .withUsername(me.email()).password(apiToken)
+                                .withUsername(me.login()).password(personalAccessToken)
                                 .authorities("ROLE_USER")
                                 .accountExpired(false)
                                 .credentialsExpired(false)
                                 .disabled(false)
                                 .accountLocked(false)
                                 .build();
-                        return UsernamePasswordAuthenticationToken.authenticated(userDetails, userDetails.getPassword(), userDetails.getAuthorities());
+                        return UsernamePasswordAuthenticationToken.authenticated(userDetails,
+                                userDetails.getPassword(), userDetails.getAuthorities());
                     });
 
         };

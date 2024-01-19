@@ -1,5 +1,6 @@
 package com.ahmedmq.boot.reactive.jwt.security.rememberme.client;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -12,10 +13,14 @@ import reactor.netty.resources.ConnectionProvider;
 import java.time.Duration;
 
 @Configuration
-public class TrackerClientConfig {
+@ConfigurationProperties(prefix = "github")
+public class GithubClientConfig {
+
+    private String host;
+    private String version;
 
     @Bean
-    TrackerClient trackerClient(WebClient.Builder builder) {
+    GithubClient githubClient(WebClient.Builder builder) {
         ConnectionProvider provider = ConnectionProvider.builder("fixed")
                 .maxConnections(500)
                 .maxIdleTime(Duration.ofSeconds(20))
@@ -28,14 +33,32 @@ public class TrackerClientConfig {
 
         var reactorClientHttpConnector = new ReactorClientHttpConnector(httpClient);
 
-        var wc = builder.baseUrl("https://www.pivotaltracker.com/services/v5")
+        var wc = builder.baseUrl(getHost())
                 .clientConnector(reactorClientHttpConnector)
+                .defaultHeader("Accept", "application/vnd.github+json")
+                .defaultHeader("X-GitHub-Api-Version", getVersion())
                 .build();
 
         var wca = WebClientAdapter.create(wc);
         return HttpServiceProxyFactory.builder().exchangeAdapter(wca)
                 .build()
-                .createClient(TrackerClient.class);
+                .createClient(GithubClient.class);
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
 }

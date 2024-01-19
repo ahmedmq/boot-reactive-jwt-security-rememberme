@@ -1,10 +1,10 @@
 package com.ahmedmq.boot.reactive.jwt.security.rememberme.core.service;
 
 
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.TrackerClient;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.GithubClient;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.repository.RememberMeTokenRepository;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.repository.RememberedLogin;
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenProvider;
 import org.slf4j.Logger;
 import org.springframework.boot.web.server.Cookie;
@@ -24,17 +24,13 @@ import reactor.util.retry.RetrySpec;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.Base64;
+import java.util.Random;
 import java.util.UUID;
 
-
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.JWT_COOKIE_DURATION;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.JWT_COOKIE_NAME;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.REMEMBER_ME_COOKIE_DURATION;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.REMEMBER_ME_COOKIE_LEEWAY_DURATION;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.REMEMBER_ME_COOKIE_NAME;
-import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.encodeCookie;
+import static com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper.*;
 import static java.time.LocalDateTime.now;
+import static org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices.DEFAULT_TOKEN_LENGTH;
 
 @Service
 public class PersistentRememberMeService implements RememberMeService {
@@ -42,14 +38,12 @@ public class PersistentRememberMeService implements RememberMeService {
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(PersistentRememberMeService.class);
 
     private final RememberMeTokenRepository tokenRepository;
-    private final TrackerClient trackerClient;
-    private final RememberMeTokenGenerator rememberMeTokenGenerator;
+    private final GithubClient githubClient;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public PersistentRememberMeService(RememberMeTokenRepository tokenRepository, TrackerClient trackerClient, RememberMeTokenGenerator rememberMeTokenGenerator, JwtTokenProvider jwtTokenProvider) {
+    public PersistentRememberMeService(RememberMeTokenRepository tokenRepository, GithubClient githubClient, JwtTokenProvider jwtTokenProvider) {
         this.tokenRepository = tokenRepository;
-        this.trackerClient = trackerClient;
-        this.rememberMeTokenGenerator = rememberMeTokenGenerator;
+        this.githubClient = githubClient;
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
@@ -61,12 +55,12 @@ public class PersistentRememberMeService implements RememberMeService {
                 .flatMap(rememberedLogin -> loginUserWithPersistentToken(exchange, rememberedLogin));
     }
 
-    public Mono<String> rememberMe(String trackerToken) {
+    public Mono<String> rememberMe(String personalAccessToken) {
         String series = UUID.randomUUID().toString();
-        String tokenValue = rememberMeTokenGenerator.generate();
+        String tokenValue = generateRememberMeToken();
 
         RememberedLogin rememberedLogin = new RememberedLogin(
-                trackerToken,
+                personalAccessToken,
                 series,
                 tokenValue,
                 now()
@@ -76,13 +70,20 @@ public class PersistentRememberMeService implements RememberMeService {
                 encodeCookie(new String[]{saved.getSeries(), saved.getTokenLatest()}));
     }
 
+    private String generateRememberMeToken() {
+        byte[] newToken = new byte[DEFAULT_TOKEN_LENGTH];
+        var random = new Random();
+        random.nextBytes(newToken);
+        return Base64.getEncoder().encodeToString(newToken);
+    }
+
     private Mono<Authentication> loginUserWithPersistentToken(ServerWebExchange exchange, RememberedLogin rememberedLogin) {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("X-TrackerToken", rememberedLogin.getApiToken());
-        return trackerClient.me(headers, Map.of("fields", "id,email,api_token"))
+        headers.setBearerAuth(rememberedLogin.getPersonalAccessToken());
+        return githubClient.user(headers)
                 .map(response -> {
                     UserDetails userDetails = User
-                            .withUsername(response.email()).password(response.apiToken())
+                            .withUsername(response.login()).password(rememberedLogin.getPersonalAccessToken())
                             .authorities("ROLE_USER")
                             .accountExpired(false)
                             .credentialsExpired(false)
@@ -129,7 +130,7 @@ public class PersistentRememberMeService implements RememberMeService {
                     }
                     if (!presentedToken.equals(token.getTokenLatest())) {
                         log.debug("Invalid remember-me token (Series/token) mismatch. Implies previous cookie theft attack.");
-                        return tokenRepository.deleteByApiToken(token.getApiToken())
+                        return tokenRepository.deleteByPersonalAccessToken(token.getPersonalAccessToken())
                                 .then(cancelCookie(exchange))
                                 .then(Mono.empty());
                     }
@@ -141,7 +142,7 @@ public class PersistentRememberMeService implements RememberMeService {
                     token.setTokenPrevious(token.getTokenLatest());
                     token.setTokenPreviousAt(token.getTokenLatestAt());
                     token.setTokenLatestAt(now());
-                    token.setTokenLatest(this.rememberMeTokenGenerator.generate());
+                    token.setTokenLatest(generateRememberMeToken());
                     return tokenRepository.save(token)
                             .then(setCookie(exchange, token.getSeries(), token.getTokenLatest()))
                             .then(Mono.just(token));

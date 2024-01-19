@@ -1,6 +1,7 @@
 package com.ahmedmq.boot.reactive.jwt.security.rememberme.web;
 
-import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.TrackerClient;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.GithubClient;
+import com.ahmedmq.boot.reactive.jwt.security.rememberme.client.UserResponse;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.service.RememberMeService;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.core.CookieHelper;
 import com.ahmedmq.boot.reactive.jwt.security.rememberme.security.jwt.JwtTokenProvider;
@@ -19,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
-
 import static org.springframework.http.HttpHeaders.SET_COOKIE;
 
 @RestController
@@ -34,13 +33,13 @@ public class AuthController {
 
     private final RememberMeService rememberMeService;
 
-    private final TrackerClient trackerClient;
+    private final GithubClient githubClient;
 
-    public AuthController(JwtTokenProvider tokenProvider, ReactiveAuthenticationManager authenticationManager, RememberMeService rememberMeService, TrackerClient trackerClient) {
+    public AuthController(JwtTokenProvider tokenProvider, ReactiveAuthenticationManager authenticationManager, RememberMeService rememberMeService, GithubClient githubClient) {
         this.tokenProvider = tokenProvider;
         this.authenticationManager = authenticationManager;
         this.rememberMeService = rememberMeService;
-        this.trackerClient = trackerClient;
+        this.githubClient = githubClient;
     }
 
     @PostMapping("/login")
@@ -49,7 +48,7 @@ public class AuthController {
 
         return this.authenticationManager
                 .authenticate(new UsernamePasswordAuthenticationToken(
-                        "", authRequest.apiToken()))
+                        "", authRequest.personalAccessToken()))
                 .onErrorResume(e -> Mono.error(new AccessDeniedException(e.getMessage())))
                 .flatMap(auth -> {
                     var accessToken = tokenProvider.createToken(auth);
@@ -71,16 +70,12 @@ public class AuthController {
 
     }
 
-    @GetMapping("/me")
-    public Mono<MeResponse> me(@AuthenticationPrincipal UserDetails user) {
+    @GetMapping("/user")
+    public Mono<UserResponse> me(@AuthenticationPrincipal UserDetails user) {
         var headers = new HttpHeaders();
-        System.out.println("user.getPassword() = " + user.getPassword());
-        headers.add("X-TrackerToken", user.getPassword());
-        return trackerClient.me(headers, Map.of("fields", "id,email,api_token"))
-                .map(me -> new MeResponse(me.id(), me.email()));
-    }
-
-    record MeResponse (int id, String email) {
+        headers.setBearerAuth(user.getPassword());
+        return githubClient.user(headers)
+                .map(me -> new UserResponse(me.id(), me.login(), me.name()));
     }
 
     record TokenResponse(String accessToken, String rememberMeToken) {

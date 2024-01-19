@@ -11,3 +11,7 @@ spring:
     url: r2dbc:h2:mem:///testdb
     username: sa
     password:
+
+github:
+  host: https://api.github.com
+  version: 2022-11-28
